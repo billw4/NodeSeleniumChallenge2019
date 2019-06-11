@@ -5,6 +5,7 @@ var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 var By = webdriver.By;
+var fs = require('fs');
 
 describe("Challenge 7 Suite", function() {
     this.timeout(20000);
@@ -56,11 +57,18 @@ describe("Challenge 7 Suite", function() {
                 done();
             })
             .catch(err => {
+                driver.takeScreenshot().then(function(data){
+                    var base64Data = data.replace(/^data:image\/png;base64,/,"")
+                    fs.writeFile("makeFail.png", base64Data, 'base64', function(err) {
+                        if(err) console.log(err);
+                        done();
+                    });
+                });
                 done(err);
             })
         }, 3000);
     });
-    
+
     it("should validate the URLs to popular MODELS", function(done) {
         this.timeout(100000);
         setTimeout(function() {
@@ -82,6 +90,13 @@ describe("Challenge 7 Suite", function() {
                 done();
             })
             .catch(err => {
+                driver.takeScreenshot().then(function(data){
+                    var base64Data = data.replace(/^data:image\/png;base64,/,"")
+                    fs.writeFile("modelFail.png", base64Data, 'base64', function(err) {
+                        if(err) console.log(err);
+                        done();
+                    });
+                });
                 done(err);
             })
         }, 5000);
