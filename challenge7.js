@@ -60,6 +60,32 @@ describe("Challenge 7 Suite", function() {
             })
         }, 3000);
     });
+    
+    it("should validate the URLs to popular MODELS", function(done) {
+        this.timeout(100000);
+        setTimeout(function() {
+            driver.get("https://www.copart.com/");
+            driver.findElements(By.xpath("//div[@ng-if='popularSearches']//a[contains(@href,'model')]"))
+            .then(function(elems) {
+                var models = [];
+                var modelLinks = [];
+                for (let i = 0; i < elems.length; i++) {
+                    models.push(elems[i].getText());
+                    modelLinks.push(elems[i].getAttribute('href'));
+                }
+                return Promise.all([Promise.all(models), Promise.all(modelLinks)])
+            })
+            .then(async function(modelResults) {
+                for (let i = 0; i < modelResults[0].length; i++) {
+                   await navigateToUrl(modelResults[1][i], "for " + modelResults[0][i].toLowerCase());
+                }
+                done();
+            })
+            .catch(err => {
+                done(err);
+            })
+        }, 5000);
+    });
 
     async function navigateToUrl(url, validation) {
         driver.get(url);
