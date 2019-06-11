@@ -36,7 +36,7 @@ describe("Challenge 7 Suite", function() {
         }, 2000);
     });
 
-    it("should get the list of popular makes and model names and links", function(done) {
+    it("should validate the URLs to popular MAKES", function(done) {
         this.timeout(100000);
         setTimeout(function() {
             driver.findElements(By.xpath("//div[@ng-if='popularSearches']//a[contains(@href,'make')]"))
