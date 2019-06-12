@@ -1,20 +1,15 @@
 require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
 var By = webdriver.By;
+var Base = require('./base.js');
 
 describe("Challenge 5 Suite", function() {
     this.timeout(20000);
     let driver;
 
     before(function () {
-        driver = new webdriver.Builder()
-        .withCapabilities(webdriver.Capabilities.chrome())
-        .forBrowser('chrome')
-        .build();
+        driver = Base.getDriver();
     });
 
     after(function (done) {
@@ -44,7 +39,7 @@ describe("Challenge 5 Suite", function() {
                 .then(function() {
                     return driver.findElement(By.xpath("//button[@data-uname='homepageHeadersearchsubmit']")).click()
                     .then(async function() {
-                        await sleep(2000)
+                        await Base.sleep(2000)
                         .then(function() {
                             return driver.getTitle()
                             .then(function(title) {
@@ -68,7 +63,7 @@ describe("Challenge 5 Suite", function() {
             .then(function() {
                 return driver.findElement(By.xpath("//select/option[@value='100']")).click()
                 .then(async function() {
-                    await sleep(3000);
+                    await Base.sleep(2000);
                 })
             })
             .then(function() {
@@ -138,8 +133,8 @@ describe("Challenge 5 Suite", function() {
         }, 4000);
     });
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    // function sleep(ms) {
+    //     return new Promise(resolve => setTimeout(resolve, ms));
+    // }
 
 })

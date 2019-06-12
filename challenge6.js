@@ -1,24 +1,19 @@
 require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
 var By = webdriver.By;
-var fs = require('fs');
+var Base = require('./base.js');
 
 describe("Challenge 5 Suite", function() {
     this.timeout(20000);
     let driver;
 
     before(function () {
-        driver = new webdriver.Builder()
-        .withCapabilities(webdriver.Capabilities.chrome())
-        .forBrowser('chrome')
-        .build();
+        driver = Base.getDriver();
+        driver.manage().window().maximize();
     });
 
-    after(function (done) {
+    after(function(done) {
         driver.quit();
         done();
     });
@@ -41,19 +36,15 @@ describe("Challenge 5 Suite", function() {
 
     it("should search for 'Nissan'", function(done) {
         setTimeout(function() {
-                return driver.findElement(By.id("input-search")).sendKeys("nissan")
-                .then(function() {
-                    return driver.findElement(By.xpath("//button[@data-uname='homepageHeadersearchsubmit']")).click()
-                    .then(async function() {
-                        await sleep(2000)
-                        .then(function() {
-                            return driver.getTitle()
-                            .then(function(title) {
-                                return expect(title).to.contain("nissan")
-                            })
-                        })
-                    })
+            Base.searchFor('nissan', driver.findElement(By.id("input-search")));
+            driver.findElement(By.xpath("//button[@data-uname='homepageHeadersearchsubmit']")).click()
+            Base.sleep(2000)
+            .then(function() {
+                driver.getTitle()
+                .then(function(title) {
+                    expect(title).to.contain("nissan")
                 })
+            })
             .then(function() {
                 done();
             })
@@ -65,32 +56,24 @@ describe("Challenge 5 Suite", function() {
 
     it("should search for the Nissan Skyline", function(done) {
         setTimeout(function() {
-            return driver.findElement(By.xpath("//a[@data-uname='ModelFilter']")).click()
+            driver.findElement(By.xpath("//a[@data-uname='ModelFilter']")).click();
+            Base.sleep(2000)
             .then(function() {
-                return driver.findElement(By.xpath("//div[@id='collapseinside4']//input[@placeholder='Search']")).sendKeys("Skyline")
-                .then(function() {
-                    return driver.findElement(By.xpath("//input[@type='checkbox' and @value='Skyline']")).click()
-                })
+                 Base.searchFor('Skyline', driver.findElement(By.xpath("//div[@id='collapseinside4']//input[@placeholder='Search']")));
+                return driver.findElement(By.xpath("//input[@type='checkbox' and @value='Skyline']")).click();
             })
             .then(function() {
                 done();
             })
             .catch((err) => {
                 console.log("Nissan Skyline not found in search results, taking screenshot.");
-                driver.takeScreenshot().then(function(data){
-                    var base64Data = data.replace(/^data:image\/png;base64,/,"")
-                    fs.writeFile("out.png", base64Data, 'base64', function(err) {
-                        if(err) console.log(err);
-                        done();
-                    });
-                });
+                driver.takeScreenshot()
+                .then(function(data) {
+                    Base.saveScreenshot(data, 'searchFail.png');
+                })
                 done(err);
             });
-        }, 3000);
+        }, 4000);
     });
-
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
 })

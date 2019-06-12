@@ -1,21 +1,15 @@
 require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
 var By = webdriver.By;
-var fs = require('fs');
+var Base = require('./base.js');
 
 describe("Challenge 7 Suite", function() {
     this.timeout(20000);
     let driver;
 
     before(function () {
-        driver = new webdriver.Builder()
-        .withCapabilities(webdriver.Capabilities.chrome())
-        .forBrowser('chrome')
-        .build();
+        driver = Base.getDriver();
     });
 
     after(function (done) {
@@ -52,17 +46,13 @@ describe("Challenge 7 Suite", function() {
             })
             .then(async function(makeResults) {
                 for (let i = 0; i < makeResults[0].length; i++) {
-                   await navigateToUrl(makeResults[1][i], "for " + makeResults[0][i].toLowerCase());
+                   await Base.navigateToUrl(makeResults[1][i], "for " + makeResults[0][i].toLowerCase(), driver);
                 }
                 done();
             })
             .catch(err => {
                 driver.takeScreenshot().then(function(data){
-                    var base64Data = data.replace(/^data:image\/png;base64,/,"")
-                    fs.writeFile("makeFail.png", base64Data, 'base64', function(err) {
-                        if(err) console.log(err);
-                        done();
-                    });
+                    Base.saveScreenshot(data, 'makeFail.png');
                 });
                 done(err);
             })
@@ -85,38 +75,18 @@ describe("Challenge 7 Suite", function() {
             })
             .then(async function(modelResults) {
                 for (let i = 0; i < modelResults[0].length; i++) {
-                   await navigateToUrl(modelResults[1][i], "for " + modelResults[0][i].toLowerCase());
+                   await Base.navigateToUrl(modelResults[1][i], "for " + modelResults[0][i].toLowerCase(), driver);
                 }
                 done();
             })
             .catch(err => {
-                driver.takeScreenshot().then(function(data){
-                    var base64Data = data.replace(/^data:image\/png;base64,/,"")
-                    fs.writeFile("modelFail.png", base64Data, 'base64', function(err) {
-                        if(err) console.log(err);
-                        done();
-                    });
+                driver.takeScreenshot()
+                .then(function(data){
+                    Base.saveScreenshot(data, 'modelFail.png');
                 });
                 done(err);
             })
         }, 5000);
     });
 
-    async function navigateToUrl(url, validation) {
-        driver.get(url);
-        sleep(2000);
-        var valText = await driver.findElement(By.xpath("//span[@ng-if='searchText']")).getText();
-        if (valText.includes(validation)) {
-            console.log("URL, " + url + ", validated successfully.");
-            return true;
-        } else {
-            console.log("URL, " + url + ", failed validation.");
-            return false;
-        }
-    }
-
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-});
+})
