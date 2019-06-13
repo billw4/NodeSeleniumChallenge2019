@@ -2,139 +2,99 @@ require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
 var By = webdriver.By;
-var Base = require('./base.js');
+var Base = require('./BasePage.js');
+var DriverInit = require('./DriverInit.js');
+var HomePage = require('./HomePage.js');
+var SearchPage = require('./SearchPage.js');
 
 describe("Challenge 5 Suite", function() {
     this.timeout(20000);
     let driver;
 
     before(function () {
-        driver = Base.getDriver();
+        driver = DriverInit.getDriver();
+        homePage = new HomePage(driver);
+        searchPage = new SearchPage(driver);
     });
 
-    after(function (done) {
+    after(function(done) {
         driver.quit();
         done();
     });
 
     it("should open the Copart website", function(done) {
-        driver.get("https://www.copart.com/");
-        setTimeout(function() {
-            driver.getTitle().then(function(title) {
-                console.log("Title: " + title);
-                expect(title).to.contain('Auto Auction');
-            })
-            .then(function() {
+        homePage.open(HomePage.HOMEPAGE_URL)
+        .then(function() {
+            driver.getTitle()
+            .then(function(title) {
+                expect(title).to.include("Auto Auction");
                 done();
-            })
-            .catch(err => {
-                done(err);
             });
-        }, 1000);
+        });
     });
 
     it("should search for 'Porsche'", function(done) {
-        setTimeout(function() {
-                return driver.findElement(By.id("input-search")).sendKeys("porsche")
-                .then(function() {
-                    return driver.findElement(By.xpath("//button[@data-uname='homepageHeadersearchsubmit']")).click()
-                    .then(async function() {
-                        await Base.sleep(2000)
-                        .then(function() {
-                            return driver.getTitle()
-                            .then(function(title) {
-                                return expect(title).to.contain("porsche")
-                            })
-                        })
-                    })
-                })
-            .then(function() {
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
-        }, 2000);
+        homePage.searchFor("Porsche")
+        .then(function(title) {
+            expect(title).to.include("Porsche");
+            done();
+        });
     });
 
     it("should display 100 results", function(done) {
-        setTimeout(function() {
-            return driver.findElement(By.xpath("(//select[@name='serverSideDataTable_length'])[1]")).click()
-            .then(function() {
-                return driver.findElement(By.xpath("//select/option[@value='100']")).click()
-                .then(async function() {
-                    await Base.sleep(2000);
-                })
-            })
-            .then(function() {
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
-        }, 3000)
+        searchPage.select100Entries()
+        .then(function(status) {
+            expect(status).to.include("100");
+            done();
+        });
     });
 
-    it("should retrieve all the Porsche models and damage types", function(done) {
-        setTimeout(function() {
-            return driver.findElements(By.xpath("//span[@data-uname='lotsearchLotmodel']"))
-            .then(function(elems) {
-                var models = [];
-                for (let i = 0; i < elems.length; i++) {
-                    models.push(elems[i].getText());
-                }
-                return Promise.all(models)
-                .then(function(modelArray) {
-                    const modelSet = new Set(modelArray);
-                    console.log("Porsche models found: " + modelSet.size);
-                })
-                .then(function() {
-                    return driver.findElements(By.xpath("//span[@data-uname='lotsearchLotdamagedescription']"))
-                    .then(function(elems) {
-                        var damages = [];
-                        for (let i = 0; i < elems.length; i++) {
-                            damages.push(elems[i].getText());
-                        }
-                        return Promise.all(damages)
-                        .then(function(damageArray) {
-                            var rearEnd = 0;
-                            var frontEnd = 0;
-                            var minorDent = 0;
-                            var undercarriage = 0;
-                            var misc = 0;
-                            for (x = 0; x < damageArray.length; x++) {
-                                if (damageArray[x] == "REAR END") {
-                                    rearEnd += 1;
-                                } else if (damageArray[x] == "FRONT END") {
-                                    frontEnd += 1;
-                                } else if (damageArray[x] == "MINOR DENT/SCRATCHES") {
-                                    minorDent += 1;
-                                } else if (damageArray[x] == "UNDERCARRIAGE") {
-                                    undercarriage += 1;
-                                } else {
-                                    misc += 1;
-                                }
-                            }
-                            console.log("Rear end damage count: " + rearEnd);
-                            console.log("Front end damage count: " + frontEnd);
-                            console.log("Minor dent or scratch damage count: " + minorDent);
-                            console.log("Undercarriage damage count: " + undercarriage);
-                            console.log("MIscellaneous damage count: " + misc);
-                        })
-                    })
-                })
-            })
-            .then(function() {
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
-        }, 4000);
+    it("should retrieve Porsche model count", function(done) {
+        searchPage.getUniqueModels()
+        .then(function(models) {
+            console.log("Porsche model count: " + models.size);
+            done();
+        });
     });
 
-    // function sleep(ms) {
-    //     return new Promise(resolve => setTimeout(resolve, ms));
-    // }
+    it("should retrieve Rear End damage count", function(done) {
+        searchPage.getDamageTypeCount("REAR END")
+        .then(function(count) {
+            console.log("Rear End damage count: " + count);
+            done();
+        });
+    });
+
+    it("should retrieve Front End damage count", function(done) {
+        searchPage.getDamageTypeCount("FRONT END")
+        .then(function(count) {
+            console.log("Front End damage count: " + count);
+            done();
+        });
+    });
+
+    it("should retrieve Minor Dent and Scratch damage count", function(done) {
+        searchPage.getDamageTypeCount("MINOR DENT/SCRATCHES")
+        .then(function(count) {
+            console.log("Minor Dent and Scratch damage count: " + count);
+            done();
+        });
+    });
+
+    it("should retrieve Undercarriage damage count", function(done) {
+        searchPage.getDamageTypeCount("UNDERCARRIAGE")
+        .then(function(count) {
+            console.log("Undercarriage damage count: " + count);
+            done();
+        });
+    });
+
+    it("should retrieve Misc. damage count", function(done) {
+        searchPage.getMiscDamageCount()
+        .then(function(count) {
+            console.log("Misc. damage count: " + count);
+            done();
+        });
+    });
 
 })

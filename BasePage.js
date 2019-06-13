@@ -1,30 +1,35 @@
-var webdriver = require('selenium-webdriver');
-By = webdriver.By;
-var fs = require('fs');
+var until = require('selenium-webdriver').until;
+var driver;
 
-var getDriver = function() {
-    return new webdriver.Builder()
-    .withCapabilities(webdriver.Capabilities.chrome())
-    .forBrowser('chrome')
-    .build();
+function BasePage(webdriver) {
+    this.driver = webdriver;
+}
+
+BasePage.prototype.open = async function(url) {
+    await this.driver.get(url);
+    return this;
 };
 
-var sleep = function(ms) {
+BasePage.prototype.getTitle = function() {
+    return this.driver.getTitle();
+};
+
+BasePage.prototype.sleep = function(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-var saveScreenshot = function(data, fileName) {
+BasePage.prototype.saveScreenshot = function(data, fileName) {
     var base64Data = data.replace(/^data:image\/png;base64,/,"")
     fs.writeFile(fileName, base64Data, 'base64', function(err) {
         if(err) console.log(err);
     });
 };
 
-var searchFor = function(text, element) {
+BasePage.prototype.searchFor = function(text, element) {
     element.sendKeys(text);
 };
 
-var navigateToUrl = async function(url, validation, driver) {
+BasePage.prototype.navigateToUrl = async function(url, validation, driver) {
     driver.get(url);
     sleep(3000);
     var valText = await driver.findElement(By.xpath("//span[@ng-if='searchText']")).getText();
@@ -37,4 +42,6 @@ var navigateToUrl = async function(url, validation, driver) {
     }
 };
 
-module.exports = {getDriver, sleep, saveScreenshot, navigateToUrl, searchFor};
+
+
+module.exports = BasePage;

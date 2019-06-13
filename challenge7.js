@@ -2,7 +2,7 @@ require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
 var By = webdriver.By;
-var Base = require('./base.js');
+var Base = require('./BasePage.js');
 
 describe("Challenge 7 Suite", function() {
     this.timeout(20000);
