@@ -13,6 +13,8 @@ var SEARCH_RESULT_DAMAGES_XPATH = "//span[@data-uname='lotsearchLotdamagedescrip
 var FILTER_OPTION_BUTTONS_XPATH = "//ul[@class='list-group']//h4/a[1]";
 var FILTER_SEARCH_BOX_XPATH = "/ancestor::li//input[@placeholder='Search']";
 var FILTER_RESULTS_XPATH ="//div[@class='checkbox']";
+var POPULAR_URLS_XPATH = "//div[@ng-if='popularSearches']//a[contains(@href,' ')]";
+var VALIDATION_TEXT_XPATH = "//span[@ng-if='searchText']";
 
 SearchPage.prototype = Object.create(BasePage.prototype);
 SearchPage.prototype.constructor = SearchPage;
@@ -129,7 +131,7 @@ SearchPage.prototype.checkForQueryInFilterResults = async function(filterName, q
     var driver = this.driver;
     var modelFound = false;
     await this.getFilterButtonAndPositionByName(filterName)
-    .then(async function(elem) {
+    .then(async function() {
         await driver.findElements(By.xpath(FILTER_RESULTS_XPATH))
         .then(async function(elem) {
             for (let x = 0; x < elem.length; x++) {
@@ -151,6 +153,35 @@ SearchPage.prototype.checkForQueryInFilterResults = async function(filterName, q
 SearchPage.prototype.getScreenshot = async function() {
     var data = await this.takeScreenshot()
     await this.saveScreenshot(data, "failScreenshot.png");
+};
+
+
+SearchPage.prototype.getNamesAndUrlsByMakeOrModel = async function(type) {
+    var results = [];
+    var regex = /(?<=@href,')(\B)[^']/g;
+    var carXpath = POPULAR_URLS_XPATH.replace(regex, type);
+    await this.driver.findElements(By.xpath(carXpath))
+    .then(function(elems) {
+        var cars = [];
+        var urls = [];
+        for (let i = 0; i < elems.length; i++) {
+            cars.push(elems[i].getText());
+            urls.push(elems[i].getAttribute('href'));
+        }
+        results = Promise.all([Promise.all(cars), Promise.all(urls)]);
+    });
+    return results;
+};
+
+SearchPage.prototype.getValidationText = async function(text) {
+
+}
+
+SearchPage.prototype.validatePopularMakeAndModelUrls = async function(results) {
+    driver = this.driver;
+    for (let i = 0; i < results[0].length; i++) {
+        await this.navigateToUrl(results[1][i], "for " + results[0][i].toLowerCase(), VALIDATION_TEXT_XPATH, driver);
+    }
 };
 
 module.exports = SearchPage;

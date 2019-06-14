@@ -1,5 +1,4 @@
 require('chromedriver');
-var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
 var DriverInit = require('./DriverInit.js');
 var HomePage = require('./HomePage.js');
@@ -22,14 +21,9 @@ describe("Challenge 5 Suite", function() {
     });
 
     it("should open the Copart website", function(done) {
-        homePage.open(HomePage.HOMEPAGE_URL)
-        .then(function() {
-            driver.getTitle()
-            .then(function(title) {
-                expect(title).to.include("Auto Auction");
-                done();
-            });
-        });
+        homePage.open(HomePage.HOMEPAGE_URL);
+        homePage.pageLoaded("Auto Auction");
+        done();
     });
 
     it("should search for 'Nissan'", function(done) {

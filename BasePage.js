@@ -1,6 +1,5 @@
-var until = require('selenium-webdriver').until;
+var By = require('selenium-webdriver').By;
 var fs = require('fs');
-var driver;
 
 function BasePage(webdriver) {
     this.driver = webdriver;
@@ -11,8 +10,16 @@ BasePage.prototype.open = async function(url) {
     return this;
 };
 
-BasePage.prototype.getTitle = function() {
-    return this.driver.getTitle();
+BasePage.prototype.pageLoaded = async function(expectedTitle) {
+    var loaded = false;
+    await this.driver.getTitle()
+    .then(async function(title) {
+        if (title.includes(expectedTitle)) {
+            loaded = true;
+            return await loaded;
+        }
+    })
+    return loaded;
 };
 
 BasePage.prototype.sleep = function(ms) {
@@ -35,10 +42,9 @@ BasePage.prototype.searchFor = function(text, element) {
     element.sendKeys(text);
 };
 
-BasePage.prototype.navigateToUrl = async function(url, validation, driver) {
+BasePage.prototype.navigateToUrl = async function(url, validation, locator, driver) {
     driver.get(url);
-    sleep(3000);
-    var valText = await driver.findElement(By.xpath("//span[@ng-if='searchText']")).getText();
+    var valText = await driver.findElement(By.xpath(locator)).getText();
     if (valText.includes(validation)) {
         console.log("URL, " + url + ", validated successfully.");
         return true;

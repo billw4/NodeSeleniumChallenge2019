@@ -22,13 +22,8 @@ describe("Challenge 5 Suite", function() {
 
     it("should open the Copart website", function(done) {
         homePage.open(HomePage.HOMEPAGE_URL)
-        .then(function() {
-            driver.getTitle()
-            .then(function(title) {
-                expect(title).to.include("Auto Auction");
-                done();
-            });
-        });
+        homePage.pageLoaded("Auto Auction");
+        done();
     });
 
     it("should search for 'Porsche'", function(done) {
