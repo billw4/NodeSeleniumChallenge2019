@@ -150,11 +150,13 @@ SearchPage.prototype.checkForQueryInFilterResults = async function(filterName, q
     return modelFound;
 };
 
-SearchPage.prototype.getScreenshot = async function() {
-    var data = await this.takeScreenshot()
-    await this.saveScreenshot(data, "failScreenshot.png");
+SearchPage.prototype.getScreenshot = async function(fileName) {
+    await this.saveScreenshot();
 };
 
+SearchPage.prototype.getCurrentUrl = async function() {
+    return await this.driver.getCurrentUrl();
+};
 
 SearchPage.prototype.getNamesAndUrlsByMakeOrModel = async function(type) {
     var results = [];
@@ -170,18 +172,16 @@ SearchPage.prototype.getNamesAndUrlsByMakeOrModel = async function(type) {
         }
         results = Promise.all([Promise.all(cars), Promise.all(urls)]);
     });
+    
     return results;
 };
 
-SearchPage.prototype.getValidationText = async function(text) {
-
-}
-
-SearchPage.prototype.validatePopularMakeAndModelUrls = async function(results) {
+SearchPage.prototype.validatePopularMakeAndModelUrls = async function(results, baseUrl) {
     driver = this.driver;
     for (let i = 0; i < results[0].length; i++) {
         await this.navigateToUrl(results[1][i], "for " + results[0][i].toLowerCase(), VALIDATION_TEXT_XPATH, driver);
     }
+    await this.driver.get(baseUrl);
 };
 
 module.exports = SearchPage;

@@ -17,7 +17,7 @@ HomePage.prototype.searchFor = async function(text) {
     await this.getSearchBar().sendKeys(text);
     await this.getSearchButton().click();
     await this.sleep(2000);
-    return await this.getTitle();
+    return await this.driver.getTitle();
 };
 
 HomePage.prototype.getSearchBar = function() {
