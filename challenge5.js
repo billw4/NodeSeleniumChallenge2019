@@ -1,8 +1,6 @@
 require('chromedriver');
 var webdriver = require('selenium-webdriver');
 var expect = require('chai').expect;
-var By = webdriver.By;
-var Base = require('./BasePage.js');
 var DriverInit = require('./DriverInit.js');
 var HomePage = require('./HomePage.js');
 var SearchPage = require('./SearchPage.js');

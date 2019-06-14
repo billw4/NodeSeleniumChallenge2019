@@ -10,6 +10,9 @@ var ENTRY_COUNT_100_OPTION_XPATH = "//select/option[@value='100']";
 var ENTRY_STATUS_ID = "serverSideDataTable_info";
 var SEARCH_RESULT_MODELS_XPATH = "//span[@data-uname='lotsearchLotmodel']";
 var SEARCH_RESULT_DAMAGES_XPATH = "//span[@data-uname='lotsearchLotdamagedescription']";
+var FILTER_OPTION_BUTTONS_XPATH = "//ul[@class='list-group']//h4/a[1]";
+var FILTER_SEARCH_BOX_XPATH = "/ancestor::li//input[@placeholder='Search']";
+var FILTER_RESULTS_XPATH ="//div[@class='checkbox']";
 
 SearchPage.prototype = Object.create(BasePage.prototype);
 SearchPage.prototype.constructor = SearchPage;
@@ -86,5 +89,68 @@ SearchPage.prototype.getMiscDamageCount = async function() {
     return count;
 };
 
+SearchPage.prototype.getFilterButtons = function() {
+    return this.driver.findElements(By.xpath(FILTER_OPTION_BUTTONS_XPATH));
+};
+
+SearchPage.prototype.getFilterButtonAndPositionByName = async function(filterName) {
+    var buttonElem;
+    var position;
+    await this.getFilterButtons()
+    .then(async function(buttons) {
+        for (let i = 0; i < buttons.length; i++) {
+            await buttons[i].getText()
+            .then(function(text) {
+                if (text == filterName) {
+                    buttonElem = buttons[i];
+                    position = i + 1;
+                }
+            });
+        }
+    });
+    return [buttonElem, position];
+};
+
+SearchPage.prototype.searchFilterByName = async function(filterName, query) {
+    var driver = this.driver;
+    await this.getFilterButtonAndPositionByName(filterName)
+    .then(async function(elem) {
+        elem[0].click();
+        var index = elem[1];
+        var searchElemPath = `(${FILTER_OPTION_BUTTONS_XPATH})[${index}]${FILTER_SEARCH_BOX_XPATH}`;
+        await driver.findElement(By.xpath(searchElemPath))
+        .then(function(searchBox) {
+            searchBox.sendKeys(query);
+        });
+    });
+};
+
+SearchPage.prototype.checkForQueryInFilterResults = async function(filterName, query) {
+    var driver = this.driver;
+    var modelFound = false;
+    await this.getFilterButtonAndPositionByName(filterName)
+    .then(async function(elem) {
+        await driver.findElements(By.xpath(FILTER_RESULTS_XPATH))
+        .then(async function(elem) {
+            for (let x = 0; x < elem.length; x++) {
+                await elem[x].getText()
+                .then(function(text) {
+                    if (text == query) {
+                        modelFound = true;
+                    }
+                });
+            }
+        });
+    });
+    if (modelFound == false) {
+        this.getScreenshot();
+    }
+    return modelFound;
+};
+
+SearchPage.prototype.getScreenshot = async function() {
+    var data = await this.takeScreenshot()
+    await this.saveScreenshot(data, "failScreenshot.png");
+};
 
 module.exports = SearchPage;

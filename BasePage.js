@@ -1,4 +1,5 @@
 var until = require('selenium-webdriver').until;
+var fs = require('fs');
 var driver;
 
 function BasePage(webdriver) {
@@ -18,9 +19,14 @@ BasePage.prototype.sleep = function(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+BasePage.prototype.takeScreenshot = function() {
+    return this.driver.takeScreenshot();
+};
+
 BasePage.prototype.saveScreenshot = function(data, fileName) {
     var base64Data = data.replace(/^data:image\/png;base64,/,"")
     fs.writeFile(fileName, base64Data, 'base64', function(err) {
+        console.log("Screenshot saved.");
         if(err) console.log(err);
     });
 };
@@ -41,7 +47,5 @@ BasePage.prototype.navigateToUrl = async function(url, validation, driver) {
         return false;
     }
 };
-
-
 
 module.exports = BasePage;
