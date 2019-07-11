@@ -52,7 +52,7 @@ SearchPage.prototype.getUniqueModels = async function() {
         modelArray.forEach(item => modelSet.add(item));
     });
     return modelSet;
-}
+};
 
 SearchPage.prototype.getDamages = async function() {
     var damages = [];
@@ -172,7 +172,6 @@ SearchPage.prototype.getNamesAndUrlsByMakeOrModel = async function(type) {
         }
         results = Promise.all([Promise.all(cars), Promise.all(urls)]);
     });
-    
     return results;
 };
 

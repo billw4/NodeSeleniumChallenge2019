@@ -8,7 +8,7 @@ describe("Challenge 5 Suite", function() {
     this.timeout(20000);
     let driver;
 
-    before(function () {
+    before(function() {
         driver = DriverInit.getDriver();
         driver.manage().window().maximize();
         homePage = new HomePage(driver);
